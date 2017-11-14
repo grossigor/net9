@@ -23,4 +23,4 @@ def get_user_friends_list(user_id=None):
 if __name__ == '__main__':
     my_friends_list = get_user_friends_list()
     user_friends_list = [set(get_user_friends_list(user_id)) for user_id in my_friends_list]
-    print(set.intersection(*user_friends_list))
+    user_friends_list_intersection = set.intersection(*user_friends_list)
