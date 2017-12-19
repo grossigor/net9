@@ -1,6 +1,8 @@
 class Animal:
-    breathing = True
-    pulse = True
+
+    def __init__(self):
+        self.breathing = True
+        self.pulse = True
 
     def eat(self):
         print('Eating')
@@ -13,15 +15,19 @@ class Animal:
 
 
 class Artiodactyl(Animal):
-    hooves = 4
+
+    def __init__(self):
+        self.hooves = 4
 
     def run(self):
         print('Running')
 
 
 class Bird(Animal):
-    wings = 2
-    beak = True
+
+    def __init__(self):
+        self.wings = 2
+        self.beak = True
 
     def fly(self):
         print('Flying')
@@ -31,33 +37,45 @@ class Bird(Animal):
 
 
 class Duck(Bird):
-    color = 'grey'
+
+    def __init__(self):
+        self.color = 'grey'
 
 
 class Chicken(Bird):
-    color = 'black'
+
+    def __init__(self):
+        self.color = 'black'
 
 
 class Goose(Bird):
-    color = 'white'
+
+    def __init__(self):
+        self.color = 'white'
 
 
 class Cow(Artiodactyl):
-    horns = 2
+
+    def __init__(self):
+        self.horns = 2
 
     def milk(self):
         print('Milk')
 
 
 class Goat(Artiodactyl):
-    horns = 2
+
+    def __init__(self):
+        self.horns = 2
 
     def butt(self):
         print('Butting')
 
 
 class Sheep(Artiodactyl):
-    horns = 2
+
+    def __init__(self):
+        self.horns = 2
 
     def shear(self):
         print('Wool')
@@ -67,3 +85,19 @@ class Pig(Artiodactyl):
 
     def dig(self):
         print('Digging')
+
+
+animal = Animal()
+artiodactyl = Artiodactyl()
+bird = Bird()
+duck = Duck()
+chicken = Chicken()
+goose = Goose()
+cow = Cow()
+goat = Goat()
+sheep = Sheep()
+pig = Pig()
+
+pig.drink()
+goose.fly()
+print(cow.horns)
