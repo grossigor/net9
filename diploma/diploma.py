@@ -4,6 +4,9 @@ from time import sleep
 
 VERSION = '5.69'
 TOKEN = 'secret'
+TOO_MANY_REQUESTS_CODE = 6
+PERMISSION_DENIED = 7
+USER_DELETED_OR_BANNED = 18
 
 
 def get_token():
@@ -18,26 +21,41 @@ def do_request(method, **kwargs):
         'v': VERSION
     }
     params.update(kwargs)
+    url = 'https://api.vk.com/method/' + method
     while True:
         try:
             print('-')
-            response = requests.get(method, params)
+            response = requests.get(url, params)
             response.raise_for_status()
             response_json = response.json()
-            if 'error' in response_json.keys():
-                code = response_json['error']
-                if code == 6:
+            if 'error' in response_json:
+                code = response_json['error']['error_code']
+                if code == TOO_MANY_REQUESTS_CODE:
+                    print('Ошибка: Слишком много запросов в секунду. Запрос повторяется')
                     sleep(0.35)
                     continue
+                if code == USER_DELETED_OR_BANNED:
+                    print('Ошибка: Пользователь был удалён или заблокирован. Запрос будет пропущен.')
+                    print(response_json)
+                    return response_json
+                if code == PERMISSION_DENIED:
+                    print('Ошибка: Отсутствуют права для выполнения действия. Запрос будет пропущен.')
+                    print(response_json)
+                    return response_json
+                else:
+                    print('Неопознаная ошибка. Запрос {0} вернул ответ:'.format(method))
+                    print(response_json)
+                    return response_json
             else:
                 return response_json
-        except requests.exceptions.HTTPError:
-            print('HTTP Error')
+        except requests.exceptions.HTTPError as err:
+            print('Ошибка: HTTP Error. Приостановите работу программы и попробуйте позже')
+            print(err)
             continue
 
 
 def validate_user_name(user_name):
-    response_json = do_request('https://api.vk.com/method/users.get', user_ids=user_name)
+    response_json = do_request('users.get', user_ids=user_name)
     try:
         return response_json['response'][0]['id']
     except KeyError:
@@ -45,7 +63,7 @@ def validate_user_name(user_name):
 
 
 def get_user_friends_list(user_id=None):
-    response_json = do_request('https://api.vk.com/method/friends.get', user_id=user_id)
+    response_json = do_request('friends.get', user_id=user_id)
     try:
         return response_json['response']['items']
     except KeyError:
@@ -53,7 +71,7 @@ def get_user_friends_list(user_id=None):
 
 
 def get_user_groups_list(user_id=None):
-    response_json = do_request('https://api.vk.com/method/groups.get', user_id=user_id)
+    response_json = do_request('groups.get', user_id=user_id)
     try:
         return response_json['response']['items']
     except KeyError:
@@ -61,8 +79,7 @@ def get_user_groups_list(user_id=None):
 
 
 def get_group_info(group_id):
-    response_json = do_request('https://api.vk.com/method/groups.getById',
-                               group_id=group_id, fields='members_count')
+    response_json = do_request('groups.getById', group_id=group_id, fields='members_count')
     try:
         group_info = {
             'id': response_json['response'][0]['id'],
@@ -98,9 +115,9 @@ if __name__ == '__main__':
     TOKEN = get_token()
     print('Введите идентификатор или имя пользователя')
     user_name = input()
-    validated_user_name = validate_user_name(user_name)
-    if validated_user_name is not None:
-        result_groups_list = get_result_for_user(validated_user_name)
+    validated_user_id = validate_user_name(user_name)
+    if validated_user_id is not None:
+        result_groups_list = get_result_for_user(validated_user_id)
         groups = []
         for group_id in result_groups_list:
             groups.append(get_group_info(group_id))
